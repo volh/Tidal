@@ -46,13 +46,12 @@
   "*The name of the tidal process buffer (default=*tidal*).")
 
 (defvar tidal-interpreter
-  "ghci"
-  "*The haskell interpeter to use (default=ghci).")
+  "stack"
+  "*The haskell interpeter to use (default=stack).")
 
 (defvar tidal-interpreter-arguments
-  (list "-XOverloadedStrings"
-        )
-  "*Arguments to the haskell interpreter (default=none).")
+  (list "ghci" "--ghci-options" "-XOverloadedStrings")
+  "*Arguments to the haskell interpreter (default=ghci).")
 
 (defvar tidal-literate-p
   t
@@ -137,16 +136,16 @@
 (defun tidal-chunk-string (n s)
   "Split a string S into chunks of N characters."
   (let* ((l (length s))
-         (m (min l n))
-         (c (substring s 0 m)))
+	 (m (min l n))
+	 (c (substring s 0 m)))
     (if (<= l n)
-        (list c)
+	(list c)
       (cons c (tidal-chunk-string n (substring s n))))))
 
 (defun tidal-send-string (s)
   (if (comint-check-proc tidal-buffer)
       (let ((cs (tidal-chunk-string 64 (concat s "\n"))))
-        (mapcar (lambda (c) (comint-send-string tidal-buffer c)) cs))
+	(mapcar (lambda (c) (comint-send-string tidal-buffer c)) cs))
     (error "no tidal process running?")))
 
 (defun tidal-transform-and-store (f s)
@@ -189,10 +188,10 @@
   (tidal-get-now)
   (mark-paragraph)
   (let* ((s (buffer-substring-no-properties (region-beginning)
-                                            (region-end)))
-         (s* (if tidal-literate-p
-                 (tidal-unlit s)
-               s)))
+					    (region-end)))
+	 (s* (if tidal-literate-p
+		 (tidal-unlit s)
+	       s)))
     (tidal-send-string ":{")
     (tidal-send-string s*)
     (tidal-send-string ":}")
